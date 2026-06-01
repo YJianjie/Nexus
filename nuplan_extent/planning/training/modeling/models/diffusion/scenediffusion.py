@@ -368,6 +368,7 @@ class simpleDiffusion(nn.Module):
         if grad_list is not None:
             [grad, x_t, target] = grad_list
             mu = alpha_s * (z_t * (1 - c) / alpha_t + c * x_pred) - grad*300
+            # mu = alpha_s * (z_t * (1 - c) / alpha_t + c * x_pred) - grad*3000
         else:
             mu = alpha_s * (z_t * (1 - c) / alpha_t + c * x_pred)
         
@@ -458,7 +459,10 @@ class simpleDiffusion(nn.Module):
         weight = torch.full_like(x_start, 4.0, device=x_start.device)
         weight = torch.where(mask.bool(), weight, torch.full_like(weight, 1.0, device=x_start.device))
         loss = nn.functional.mse_loss(x_start, target.requires_grad_(), reduction="none")
+        # 取负，推离target，对应生成轨迹的多样性
         loss = -(weight * valid_mask.unsqueeze(-1) * loss).mean() * 10000
+        # 取正，靠近target，生成轨迹趋向于接近真实轨迹
+        # loss = (weight * valid_mask.unsqueeze(-1) * loss).mean() * 10000
         # import pdb; pdb.set_trace()
         # print('target', target[0,0,:,0])
         # print('loss', (x_start-target)[0,0,:,0])
@@ -541,6 +545,8 @@ class simpleDiffusion(nn.Module):
         # apply keep_mask
         mu[keep_mask.bool()] = scene_tensor[keep_mask.bool()]
         z_t = mu + torch.randn_like(mu) * torch.sqrt(variance)
+        # z_t = mu + torch.randn_like(mu) * torch.sqrt(variance) * 5
+        # z_t = mu + torch.randn_like(mu) * 0.5
 
         return z_t, intermidiates
 
@@ -582,7 +588,7 @@ class simpleDiffusion(nn.Module):
         global_context,
         z_t: Optional[torch.Tensor] = None,
         return_intermidates: bool = False,
-        use_guidance_fn: bool = False,
+        use_guidance_fn: bool = True,
         raw_map=None
     ):
         """
@@ -637,6 +643,8 @@ class simpleDiffusion(nn.Module):
             u_t = scaling_matrix[t]
             u_s = scaling_matrix[t+1]
             z_t, mu = self.sampler_step(scene_tensor, z_t, keep_mask, u_t, u_s, local_context, global_context, valid_mask, schedule_func, (use_guidance_fn if t < 100 else False), True, target,constrain)
+            # z_t, mu = self.sampler_step(scene_tensor, z_t, keep_mask, u_t, u_s, local_context, global_context, valid_mask, schedule_func, use_guidance_fn, True, target,constrain)
+
             # z_t = torch.where(keep_mask.bool(), original_z_t, z_t)
             if return_intermidates:
                 intermidiates.append(mu)

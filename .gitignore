@@ -6,3 +6,10 @@ third_party/CAT
 __pycache__/
 *.gif
 .efc*
+
+third_party/alf/
+cache/
+models/
+ref/
+download_model.sh
+huggingface_token.txt

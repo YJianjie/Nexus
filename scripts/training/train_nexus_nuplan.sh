@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
 
 # ========== Logging & Experiment Settings ==========
-SAVE_DIR="YOUR_SAVE_DIR"                    # Where logs and checkpoints will be saved
-EXPERIMENT="YOUR_EXPERIMENT_NAME"           # Experiment name
-JOB_NAME="YOUR_JOB_NAME"                    # Job name used for logging/checkpoints
+SAVE_DIR=/zeron-vepfs/tjqc/jianjie.ye/Nexus/models                    # Where logs and checkpoints will be saved
+EXPERIMENT=nuplan_mini           # Experiment name
+JOB_NAME=try                    # Job name used for logging/checkpoints
 
 # ========== Cache Settings ==========
-CACHE_DIR="YOUR_CACHE_DIR"                  # Path to cache directory
-CACHE_META_PATH="YOUR_CACHE_META_PATH"      # Path to cache metadata CSV
+# CACHE_DIR=/zeron-vepfs/tjqc/jianjie.ye/Nexus/cache/nuplan_trainval_cache                  # Path to cache directory
+CACHE_DIR=/zeron-vepfs/tjqc/jianjie.ye/Nexus/cache/nuplan_mini_cache                  # Path to cache directory
+# CACHE_META_PATH=/zeron-vepfs/tjqc/jianjie.ye/Nexus/cache/nuplan_trainval_cache/metadata/nuplan_trainval_cache_metadata_node_0.csv      # Path to cache metadata CSV
+CACHE_META_PATH=/zeron-vepfs/tjqc/jianjie.ye/Nexus/cache/nuplan_mini_cache/metadata/nuplan_mini_cache_metadata_node_0.csv      # Path to cache metadata CSV
 
 # ========== NuPlan Dataset Paths ==========
-export NUPLAN_DEVKIT_PATH="YOUR_NUPLAN_DEVKIT_PATH"      # Path to nuplan-devkit repo
-export NUPLAN_SENSOR_ROOT="YOUR_NUPLAN_SENSOR_ROOT"      # Path to sensor blobs
-export NUPLAN_DATA_ROOT="YOUR_NUPLAN_DATA_ROOT"          # Path to train/val split data
-export NUPLAN_MAPS_ROOT="YOUR_NUPLAN_MAPS_ROOT"          # Path to map files
+export NUPLAN_DEVKIT_PATH="/zeron-vepfs/tjqc/jianjie.ye/Nexus/third_party/nuplan-devkit"      # Path to nuplan-devkit repo
+export NUPLAN_SENSOR_ROOT="tj-share/nuscenes/nuplan/dataset/nuplan-v1.1/sensor_blobs"      # Path to sensor blobs
+# export NUPLAN_DATA_ROOT="/dev/shm/nuplan_root/nuplan-v1.1/splits/mini"          # Path to train/val split data
+export NUPLAN_DATA_ROOT="/zeron-vepfs/tjqc/public_datasets/nuplan/nuplan-v1.1/mini"          # Path to train/val split data
+# export NUPLAN_MAPS_ROOT="/tj-share/nuscenes/nuplan/dataset/maps"          # Path to map files
+export NUPLAN_MAPS_ROOT="/zeron-vepfs/tjqc/public_datasets/nuplan/maps"          # Path to map files
 
 # ========== Training Configuration ==========
-NUM_GPUS=YOUR_NUM_GPUS
-BATCH_SIZE_PER_GPU=YOUR_BATCH_SIZE
+NUM_GPUS=4
+BATCH_SIZE_PER_GPU=16
 NUM_ACCUM_BATCHES=$((1024 / BATCH_SIZE_PER_GPU / NUM_GPUS))
-NUM_WORKERS=$((BATCH_SIZE * NUM_GPUS))      # Adjust based on hardware
-NUM_WORKERS=YOUR_NUM_WORKERS               # Set manually if needed
+# NUM_WORKERS=$((BATCH_SIZE_PER_GPU * NUM_GPUS))      # Adjust based on hardware
+NUM_WORKERS=4               # Set manually if needed
 
 # ========== Python Environment ==========
 export PYTHONPATH=$PWD:$PYTHONPATH
@@ -31,6 +35,7 @@ export WANDB_PROJECT="YOUR_WANDB_PROJECT"
 export WANDB_EXP_NAME="YOUR_WANDB_EXP_NAME"
 export WANDB_ENTITY="YOUR_WANDB_ENTITY"
 
+# lightning.trainer.params.profiler=simple:查看函数运行时间，可选值为 simple, pytorch, pytorch_profiler, none
 python -W ignore $PWD/nuplan_extent/planning/script/run_training.py \
     group=$SAVE_DIR \
     cache.cache_path=$CACHE_DIR \
@@ -50,9 +55,10 @@ python -W ignore $PWD/nuplan_extent/planning/script/run_training.py \
     lightning.trainer.params.gradient_clip_val=1.0 \
     lightning.trainer.params.num_sanity_val_steps=0 \
     lightning.trainer.params.strategy=ddp_find_unused_parameters_true \
-    lightning.trainer.params.fast_dev_run=true\
+    lightning.trainer.params.fast_dev_run=false\
     lightning.trainer.params.detect_anomaly=false \
     lightning.trainer.params.log_every_n_steps=10\
+    lightning.trainer.params.profiler=simple \
     lightning.trainer.checkpoint.monitor=loss/train_loss \
     +lightning.trainer.overfitting.enable=false \
     +lightning.trainer.overfitting.params.overfit_batches=0 \

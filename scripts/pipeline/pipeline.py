@@ -1,5 +1,6 @@
 import sys
-sys.path.append('your/path/to/Nexus')
+# sys.path.append('your/path/to/Nexus')
+sys.path.append('/zeron-vepfs/tjqc/jianjie.ye/Nexus')
 from nuplan.planning.script.builders.worker_pool_builder import build_worker
 from nuplan.planning.script.builders.scenario_building_builder import build_scenario_builder
 from nuplan.planning.script.builders.scenario_filter_builder import build_scenario_filter
@@ -44,13 +45,15 @@ pixel_size = 0.5
 def update_config(cfg: DictConfig) -> None:
     OmegaConf.set_struct(cfg, False)
     # to save time, we can only use 3 db files to test the pipeline
-    cfg.scenario_filter.log_names = ['2021.06.11.12.06.26_veh-35_03726_03971', 
-                                     '2021.06.11.12.09.55_veh-16_00104_00221',  
-                                     '2021.10.22.18.45.52_veh-28_01175_01298']
+    cfg.scenario_filter.log_names = [
+                                    #  '2021.06.11.12.06.26_veh-35_03726_03971', 
+                                    #  '2021.06.11.12.09.55_veh-16_00104_00221',  
+                                    #  '2021.10.22.18.45.52_veh-28_01175_01298',
+                                     '2021.05.12.19.36.12_veh-35_00416_00557']
     # please set the nuplan data root and map root, and the checkpoint path to your local machine
-    cfg.scenario_builder.data_root = 'your/path/to/nuplan/dataset'
-    cfg.scenario_builder.map_root = 'your/path/to/nuplan/maps'
-    cfg.checkpoint = 'your/path/to/checkpoint'
+    cfg.scenario_builder.data_root = '/zeron-vepfs/tjqc/public_datasets/nuplan/nuplan-v1.1/mini'
+    cfg.scenario_builder.map_root = '/zeron-vepfs/tjqc/public_datasets/nuplan/maps'
+    cfg.checkpoint = '/zeron-vepfs/tjqc/jianjie.ye/Nexus/models/nuplan.ckpt'
     OmegaConf.resolve(cfg)
     OmegaConf.set_struct(cfg, True)
     return cfg
@@ -547,7 +550,8 @@ def infer_and_vis(
             device=scene_tensor.tensor.device,
         )
 
-    for task in ["bp"]: # "bp" for behavior prediction, "scene_gen" for scene generation
+    # for task in ["bp"]: # "bp" for behavior prediction, "scene_gen" for scene generation
+    for task in ["scene_gen"]: # "bp" for behavior prediction, "scene_gen" for scene generation
         features = copy.deepcopy(scene_tensor)
         predictions = infer_model(
             model,

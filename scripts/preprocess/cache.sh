@@ -2,11 +2,11 @@
 
 # ========== Logging & Experiment Settings ==========
 SAVE_DIR=/zeron-vepfs/tjqc/jianjie.ye/Nexus/models                    # Where logs and checkpoints will be saved
-EXPERIMENT=nuplan_trainval           # Experiment name
-JOB_NAME=try                    # Job name used for logging/checkpoints
+EXPERIMENT=nuplan_diy           # Experiment name
+JOB_NAME=diy                    # Job name used for logging/checkpoints
 
 # ========== Cache Settings ==========
-CACHE_DIR=/zeron-vepfs/tjqc/jianjie.ye/Nexus/cache/nuplan_trainval_cache                  # Path to cache directory
+CACHE_DIR=/zeron-vepfs/tjqc/jianjie.ye/Nexus/cache/diy_cache                  # Path to cache directory
 
 # ========== NuPlan Dataset Paths ==========
 NUPLAN_SENSOR_ROOT=/tj-share/nuscenes/nuplan/dataset/nuplan-v1.1/sensor_blobs  # Path to sensor blobs
@@ -42,7 +42,7 @@ python nuplan_extent/planning/script/run_training.py \
     cache.cache_path=$CACHE_DIR \
     experiment_name=$EXPERIMENT \
     job_name=$JOB_NAME \
-    cache.force_feature_computation=true \
+    cache.force_feature_computation=false \
     cache.versatile_caching=false \
     py_func=cache \
     +caching=cache_nuplan_nexus \
@@ -50,12 +50,9 @@ python nuplan_extent/planning/script/run_training.py \
     scenario_builder.data_root=$NUPLAN_DATA_ROOT \
     scenario_builder.map_root=$NUPLAN_MAPS_ROOT \
     scenario_builder.sensor_root=$NUPLAN_SENSOR_ROOT \
-    scenario_builder.scenario_mapping.subsample_ratio_override=0.5 \
+    +scenario_filter.limit_total_scenarios=2000 \
+    scenario_builder.scenario_mapping.subsample_ratio_override=1.0 \
     worker=single_machine_thread_pool \
     worker.use_process_pool=true \
-    worker.max_workers=$NUM_WORKERS \
-    model=nexus \
-    scenario_filter.timestamp_threshold_s=15 \
-    scenario_filter.expand_scenarios=false \
-    scenario_filter.remove_invalid_goals=false 
+    worker.max_workers=16
     # +split=$SPLIT

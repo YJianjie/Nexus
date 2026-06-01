@@ -75,6 +75,9 @@ class Nexus(TorchModuleWrapper):
 
         self.pretraining_path = pretraining_path
         self.load_pretrained_weights()
+        # todo:GRPO
+        if getattr(self.diffuser, "use_grpo", False) and self.diffuser.ref_model is None:
+            self.diffuser.set_ref_model(self.diffuser.model)
         self.forcing = True
         # self.schedule_prob = [0.2, 0.4, 0.6, 0.8]
         # self.schedule_prob = [0.5, 1.0, 1.0, 1.0]
